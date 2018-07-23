@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	{{!-- <meta http-equiv="X-Frame-Options" content="allow"> --}}
+	
+	<title>{{title}}</title>
+
+	<link rel="stylesheet" href="/stylesheets/bootstrap.min.css">
+	<link rel="stylesheet" href="/stylesheets/bootstrap.theme.min.css">
+	<link href="/stylesheets/style.css" type="text/css" rel="stylesheet">
+	<link href="/stylesheets/loader.css" type="text/css" rel="stylesheet">
+
+	<script src="/scripts/jQuery-3.2.1.js"></script>
+	<script src="/scripts/bootstrap3.js"></script>
+	<script src='/scripts/bigNumber.js'></script>
+	<script src='/scripts/buffer.min.js'></script>
+
+	{{!-- <script src="https://wzrd.in/standalone/buffer"></script> --}}
+	{{!--
+	<script src="https://unpkg.com/ipfs-api@9.0.0/dist/index.js" integrity="sha384-5bXRcW9kyxxnSMbOoHzraqa7Z0PQWIao+cgeg327zit1hz5LZCEbIMx/LWKPReuB"
+	    crossorigin="anonymous"></script> --}} {{!--
+	<script src="/javascripts/web3.js"></script> --}}
+
+	<script>
+		
+		let workerManagerInstance = {};
+		let itemManagerInstance = {};
+
+        let owner = '{{contractInfo.owner}}'
+		//let contractOwner = '{{contractInfo.tokenAddress}}';
+
+		let marketManagerAddr = '{{contractInfo.workerManagerAddress}}';
+		let marketManagerAbi = [{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"workers","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_workerName","type":"bytes32"},{"indexed":true,"name":"_worker","type":"address"}],"name":"CreateWorker","type":"event"},{"constant":false,"inputs":[],"name":"init","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_workerName","type":"bytes32"}],"name":"createWorker","outputs":[{"name":"_workerAddress","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_workerName","type":"bytes32"}],"name":"getWorkerByClient","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"}];
+		//let contractAbi2 = '{{contractInfo.marketAbi}}'
+
+		let itemManagerAddr = '{{contractInfo.itemManagerAddress}}';
+		let itemManagerAbi = [{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"bytes32"}],"name":"clientRepo","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_client","type":"bytes32"},{"indexed":true,"name":"_repo","type":"address"}],"name":"CreateRepo","type":"event"},{"constant":false,"inputs":[],"name":"init","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_client","type":"bytes32"},{"name":"_worker","type":"address"}],"name":"createRepo","outputs":[{"name":"_repo","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_client","type":"bytes32"}],"name":"getRepoByClient","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"}];
+
+		let currentUserAddress = '';
+		let hasMetaMask = false;
+
+		window.addEventListener('load', async function () {
+			if (typeof window.web3 !== "undefined" && typeof window.web3.currentProvider !== "undefined") {
+				web3 = new Web3(web3.currentProvider);
+				hasMetaMask = true;
+				myWeb3 = web3;
+			}
+			if (!hasMetaMask) {
+				showMetaMask();
+				
+			} else {
+				workerManagerInstance = web3.eth.contract(marketManagerAbi).at(marketManagerAddr);
+				itemManagerInstance = web3.eth.contract(itemManagerAbi).at(itemManagerAddr);
+				
+				web3.eth.getAccounts(function (err, res) {
+					if (err) {
+						console.log(err);
+						return;
+					}
+					$('#userAddress').prop('readonly', true);
+					$('#userAddress').val(res[0]);
+					currentUserAddress = res[0];
+                    
+					console.log(web3);
+                    
+					if(res[0]  === undefined || res[0] === 'undefined' || res[0].length < 1){
+						msgHandler.showErrorMsg('Please start your MetaMask profile!');
+						showMetaMask();
+					} 
+				});
+			}
+			function showMetaMask() {
+				$('#getMetaMask').removeClass('hide-me');
+				$('#getMetaMask').show();
+			}
+		});
+	</script>
+
+</head>
+
+<body>
+
+	<div class="row">
+		<div id="getMetaMask" class="col-xs-12 text-center msg info-msg hide-me">
+			<span>Please install </span>
+			<a target="_blank" href="https://metamask.io/">MetaMask</a>
+		</div>
+	</div>
+
+	<div class="row text-center">
+		<div class="col-xs-12">
+			<h1>Supply chain</h1>
+		</div>
+	</div>
+
+	<div class="row">
+
+		<div class="col-xs-12 col-sm-6 col-md-2">
+			
+			{{>sideNav}}
+
+		</div>
+
+		<div class="col-xs-8">
+			<div class="">
+
+				<div class="row">
+
+					<div class="error-msg msg hide-me" class="col-xs-12"></div>
+					<div class="success-msg msg hide-me" class="col-xs-12"></div>
+					<div class="i-msg msg hide-me" class="col-xs-12"></div>
+
+				</div>
+
+				<div id="loader" class="row hide-me">
+					
+					<div class="col-xs-12 text-center">
+						<div class="center-me">
+						
+						<div class="loader"></div>
+
+					</div>
+					</div>
+				</div>
+
+				{{{body}}}
+			</div>
+		</div>
+
+	</div>
+
+</body>
+
+<script src="/scripts/msgHandler.js"></script>
+<script src="/scripts/loader.js"></script>
+
+</html>

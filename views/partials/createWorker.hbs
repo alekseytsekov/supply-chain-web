@@ -1,0 +1,75 @@
+<div class="row">
+    <div class="col-xs-12 text-center">
+        <h1>
+            <b>Create Worker</b>
+        </h1>
+    </div>
+
+    <br>
+
+    <div class="form-group col-xs-6 col-xs-offset-3">
+
+        <br>
+        <br>
+        <br>
+
+        <div class="col-xs-12">
+            <label for="userAddress" class="form">Your address</label>
+        </div>
+        <input class="form-control" id="userAddress" type="text" readonly>
+        <br>
+
+        <div class="col-xs-12">
+            <label for="name" class="form">Name</label>
+        </div>
+        <input class="form-control" id="name" type="text">
+        <br>
+        
+        <div class="row">
+            <div class="col-xs-12">
+                <br>
+                <button id="btn-register-client" type="button" class="btn btn-success">Create</button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+window.addEventListener('load', function(){
+    if(hasMetaMask){
+        
+        $('#btn-register-client').click(createWorker);
+        function createWorker() {
+			let name = $('#name').val();
+            
+			if (typeof name === 'undefined' || name === '' || name.length < 3 || name.length > 50 ) {
+				msgHandler.showErrorMsg('Invalid product name!');
+				return;
+			}
+            
+			let option = {
+				from: currentUserAddress,
+				gas: 4000000
+			};
+
+            //let nameAsBytes = buffer.Buffer.from(name);
+            let nameHashed = web3.sha3(name);
+            console.log(nameHashed.length);
+
+			workerManagerInstance.createWorker(nameHashed , option, function (err, result) {
+				if (err) {
+					msgHandler.showErrorMsg(err);
+					return;
+				}
+				// tx hash
+				let msg =
+					`Successfully add a product! Transaction hash: <a target="_blank" href="https://ropsten.etherscan.io/tx/${result}">${result}</a>`;
+				msgHandler.showSuccessMsg(msg);
+				$('#name').val('');
+			});
+		}
+    }
+})
+</script>
